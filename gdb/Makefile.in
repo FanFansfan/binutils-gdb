@@ -146,7 +146,7 @@ MAKEHTMLFLAGS =
 # Set this up with gcc if you have gnu ld and the loader will print out
 # line numbers for undefined references.
 #CC_LD = g++ -static
-CC_LD = $(CXX) $(CXX_DIALECT)
+CC_LD = $(CXX) -all-static $(CXX_DIALECT)
 
 # Where is our "include" directory?  Typically $(srcdir)/../include.
 # This is essentially the header file directory for the library
