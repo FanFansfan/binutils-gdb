@@ -2347,7 +2347,7 @@ case " $configdirs " in
   *" lto-plugin "* | *" libcc1 "*)
     # When these are to be built as shared libraries, the same applies to
     # libiberty.
-    extra_host_libiberty_configure_flags=--enable-shared
+    extra_host_libiberty_configure_flags=--enable-static --disable-shared
     ;;
   *" bfd "*)
     # When bfd is to be built as a shared library, the same applies to
