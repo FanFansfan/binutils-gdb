@@ -688,9 +688,9 @@ core_target::clear_core ()
       clear_solib (current_program_space);
 
       current_program_space->cbfd.reset (nullptr);
-      m_registers.reset(nullptr);
-      m_register_status.reset(nullptr);
     }
+  m_registers.reset(nullptr);
+  m_register_status.reset(nullptr);
 }
 
 /* Close the core target.  */
