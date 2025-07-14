@@ -251,6 +251,9 @@ public:
   /* See definition.  */
   void info_proc_mappings (struct gdbarch *gdbarch);
 
+  void prepare_to_store (struct regcache *) override {}
+  void store_registers (struct regcache *, int) override;
+
   std::optional <core_target_mapped_file_info>
   lookup_mapped_file_info (const char *filename,
 			   const std::optional<CORE_ADDR> &addr)
@@ -318,6 +321,10 @@ private: /* per-core data */
      when processing the memory-mapped file information.  This will only
      be set if we find a mapped with a suitable build-id.  */
   std::string m_expected_exec_filename;
+private:
+  std::unique_ptr<gdb_byte[]> m_registers;
+  std::unique_ptr<register_status[]> m_register_status;
+  ptid_t current_ptid = null_ptid;
 };
 
 core_target::core_target ()
@@ -681,6 +688,8 @@ core_target::clear_core ()
       clear_solib (current_program_space);
 
       current_program_space->cbfd.reset (nullptr);
+      m_registers.reset(nullptr);
+      m_register_status.reset(nullptr);
     }
 }
 
@@ -1422,6 +1431,12 @@ core_target::fetch_registers (struct regcache *regcache, int regno)
 		  "Can't fetch registers from this type of core file\n");
       return;
     }
+  if (m_registers && current_ptid == regcache->ptid ())
+  {
+    memcpy(regcache->m_registers.get(), m_registers.get(), regcache->sizeof_raw_registers);
+    memcpy(regcache->m_register_status.get(), m_register_status.get(), regcache->num_regs);
+    return;
+  }
 
   struct gdbarch *gdbarch = regcache->arch ();
   get_core_registers_cb_data data = { this, regcache };
@@ -1433,6 +1448,23 @@ core_target::fetch_registers (struct regcache *regcache, int regno)
   for (int i = 0; i < gdbarch_num_regs (regcache->arch ()); i++)
     if (regcache->get_register_status (i) == REG_UNKNOWN)
       regcache->raw_supply (i, NULL);
+  if (m_registers == nullptr || current_ptid != regcache->ptid ())
+  {
+    m_registers.reset (new gdb_byte[regcache->sizeof_raw_registers]);
+    m_register_status.reset (new register_status[regcache->num_regs]);
+    current_ptid = regcache->ptid ();
+    memcpy(m_registers.get(), regcache->m_registers.get(), regcache->sizeof_raw_registers);
+    memcpy(m_register_status.get(), regcache->m_register_status.get(), regcache->num_regs);
+  }
+}
+
+void
+core_target::store_registers (struct regcache *regcache, int regnum)
+{
+  memcpy(m_registers.get() + regcache->register_offset[regnum],
+          regcache->m_registers.get() + regcache->register_offset[regnum],
+          regcache->sizeof_register[regnum]);
+  m_register_status[regnum] = REG_VALID;
 }
 
 void
