@@ -260,10 +260,18 @@ protected:
   struct regcache_descr *m_descr;
 
   bool m_has_pseudo;
+
+public:
   /* The register buffers.  */
   std::unique_ptr<gdb_byte[]> m_registers;
   /* Register cache status.  */
   std::unique_ptr<register_status[]> m_register_status;
+
+  // used for corelow.c
+  long sizeof_raw_registers;
+  int num_regs;
+  long *register_offset;
+  long *sizeof_register;
 
   friend class regcache;
   friend class detached_regcache;

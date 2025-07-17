@@ -198,6 +198,10 @@ reg_buffer::reg_buffer (gdbarch *gdbarch, bool has_pseudo)
       m_registers.reset (new gdb_byte[m_descr->sizeof_raw_registers]);
       m_register_status.reset
 	(new register_status[gdbarch_num_regs (gdbarch)] ());
+      sizeof_raw_registers = m_descr->sizeof_raw_registers;
+      num_regs = gdbarch_num_regs (gdbarch);
+      register_offset = m_descr->register_offset;
+      sizeof_register = m_descr->sizeof_register;
     }
 }
 
