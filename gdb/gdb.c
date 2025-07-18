@@ -19,10 +19,14 @@
 #include "defs.h"
 #include "main.h"
 #include "interps.h"
+#include "dlopen/src/foreign_dlopen.h"
 
 int
 main (int argc, char **argv)
 {
+  init_exec_elf(argv);
+  init_foreign_dlopen("fdlhelper");
+
   struct captured_main_args args;
 
   memset (&args, 0, sizeof args);

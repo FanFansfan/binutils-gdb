@@ -381,6 +381,21 @@ SUBDIR_GUILE_DEPS =
 SUBDIR_GUILE_LDFLAGS =
 SUBDIR_GUILE_CFLAGS =
 
+SUBDIR_DLOPEN_SRCS = \
+	dlopen/src/loader.c \
+	dlopen/src/z_err.c \
+	dlopen/src/z_printf.c \
+	dlopen/src/z_syscalls.c \
+	dlopen/src/z_utils.c \
+	dlopen/src/foreign_dlopen.c \
+
+SUBDIR_DLOPEN_OBS = $(patsubst %.c,%.o,$(SUBDIR_DLOPEN_SRCS))
+SUBDIR_DLOPEN_OBS += dlopen/src/amd64/z_trampo.o
+
+SUBDIR_DLOPEN_DEPS =
+SUBDIR_DLOPEN_LDFLAGS =
+SUBDIR_DLOPEN_CFLAGS = -DSTDLIB=1 -DELFCLASS=ELFCLASS64
+
 #
 # python sub directory definitons
 #

@@ -49,6 +49,7 @@
 #include "gdbsupport/pathstuff.h"
 #include "valprint.h"
 #include "cli/cli-style.h"
+#include "dlopen/src/foreign_dlopen.h"
 
 /* GNU/Linux libthread_db support.
 
@@ -289,7 +290,7 @@ delete_thread_db_info (process_stratum_target *targ, int pid)
     }
 
   if (info->handle != NULL)
-    dlclose (info->handle);
+    z_dlclose (info->handle);
 
   xfree (info->filename);
 
@@ -452,7 +453,7 @@ thread_db_notice_clone (ptid_t parent, ptid_t child)
 static void *
 verbose_dlsym (void *handle, const char *name)
 {
-  void *sym = dlsym (handle, name);
+  void *sym = z_dlsym (handle, name);
   if (sym == NULL)
     warning (_("Symbol \"%s\" not found in libthread_db: %s"),
 	     name, dlerror ());
@@ -832,7 +833,7 @@ try_thread_db_load_1 (struct thread_db_info *info)
   info->func ## _p = (func ## _ftype *) verbose_dlsym (info->handle, #func)
 
 #define TDB_DLSYM(info, func)			\
-  info->func ## _p = (func ## _ftype *) dlsym (info->handle, #func)
+  info->func ## _p = (func ## _ftype *) z_dlsym (info->handle, #func)
 
 #define CHK(a)								\
   do									\
@@ -990,7 +991,7 @@ try_thread_db_load (const char *library, bool check_auto_load_safe)
 	return false;
     }
 
-  handle = dlopen (library, RTLD_NOW);
+  handle = z_dlopen (library, RTLD_NOW);
   if (handle == NULL)
     {
       if (libthread_db_debug)
@@ -1002,7 +1003,7 @@ try_thread_db_load (const char *library, bool check_auto_load_safe)
     {
       void *td_init;
 
-      td_init = dlsym (handle, "td_init");
+      td_init = z_dlsym (handle, "td_init");
       if (td_init != NULL)
 	{
 	  const char *const libpath = dladdr_to_soname (td_init);
